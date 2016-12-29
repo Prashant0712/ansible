@@ -1,0 +1,31 @@
+#!/bin/bash
+
+ASG=awseb-e-mk6nv4jt2p-stack-AWSEBAutoScalingGroup-1TRJFBS8C1QIQ
+function getLoadBalancerName() { 
+ASG=$1
+LB=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $ASG --query AutoScalingGroups[*].LoadBalancerNames[] --output text`
+echo $LB
+}
+
+function getInstanceIDS(){
+        local _elb=$1
+        local _instance_ids+=$( aws elb describe-load-balancers --load-balancer-names $_elb --output text | awk '/INSTANCES/{print $2}' )
+        echo $_instance_ids
+}
+
+
+function getPrivateDNS(){
+	 local _instance_ids=$1
+         local _ips=$(aws ec2 describe-instances --instance-ids $_instance_ids --query Reservations[*].Instances[*].NetworkInterfaces[*].PrivateIpAddresses[*].PrivateIpAddress[] --output text)
+ echo "${_ips[@]}"
+}
+
+test=$(getLoadBalancerName $ASG)
+ID=$(getInstanceIDS "{$test[@]}")
+IP=$(getPrivateDNS "${ID[@]}")
+_servers_ids=($IP)
+for i in "${IP[@]}"
+do
+echo $i
+#sed -ie "20s/.*/$i\n/g" /etc/ansible/hosts
+done
