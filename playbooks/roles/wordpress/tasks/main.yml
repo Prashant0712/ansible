@@ -11,7 +11,9 @@
   command: rm -rf /etc/nginx/sites-enabled/default
   notify:
     - start nginx
-
+    
+- name: Making Remote Changes
+  command: touch /var/www/html/hello
 
 - name: Installing mysql and create user along with database
   apt: pkg=mysql-server state=installed update_cache=true
