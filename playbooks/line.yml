@@ -1,0 +1,9 @@
+- hosts: web
+  vars:
+    http_port: 80
+    domain: example.com
+  tasks:
+  
+    - name: create virtual file
+      template: src=/home/ubuntu/viurtualhost.conf dest=/home/ubuntu/{{ domain }}.conf   
+

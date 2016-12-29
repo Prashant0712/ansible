@@ -1,0 +1,73 @@
+- name: Install list of packages
+  apt: name={{item}} state=installed
+  with_items:
+       - php-gd
+       - php-fpm
+       - php-mysql
+       - php-mcrypt
+       - python-mysqldb
+
+- name: Installing nginx
+  command: rm -rf /etc/nginx/sites-enabled/default
+  notify:
+    - start nginx
+
+
+- name: Installing mysql and create user along with database
+  apt: pkg=mysql-server state=installed update_cache=true
+  notify:
+    - start mysql-server
+
+- name: Create Mysql configuration file
+  copy: src=my.cnf.j2 dest=/etc/my.cnf
+  copy: src=default dest=/etc/nginx/sites-enabled/default
+  notify:
+  - restart mysql
+
+- name: Create WordPress database
+  mysql_db: name=wordpress state=present
+
+- name: Create WordPress database user
+  mysql_user: name=test password=pass priv=wordpress.*:ALL host='%' state=present
+
+- name: Upload Wordpress tar
+  copy: src=latest.tar.gz dest=/var/www/html/ mode=0777
+
+- name: Configure wp-config file
+  shell: "{{item}}"
+  with_items:
+  - tar -xvf /var/www/html/latest.tar.gz -C /home/ubuntu
+  - rm -rf /var/www/html/*
+  - cp -r /home/ubuntu/wordpress/* /var/www/html/
+
+- set_fact:
+     myTemplateVariable: vars.yml
+
+- name: Updating wp-config
+  #template: src=/opt/ansible/playbooks/roles/wordpress/templates/wp-config-sample.php dest=/var/www/html/wp-config.php
+  template: src=wp-config-sample.php dest=/var/www/html/wp-config.php
+#- name: Configure wp-config file
+ # shell: "{{item}}"
+  #with_items:
+  #- tar -xvf /var/www/html/latest.tar.gz -C /home/ubuntu
+  #- rm -rf /var/www/html/*
+ # - cp -r /home/ubuntu/wordpress/* /var/www/html/
+ # - mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+ # - sed -ie 's/database_name_here/wordpress/' /var/www/html/wp-config.php
+  #- sed -ie 's/username_here/test/' /var/www/html/wp-config.php
+ ## - sed -ie 's/password_here/pass/' /var/www/html/wp-config.php
+  #- chown -R www-data:www-data /var/www/html/* 
+
+
+- name: Install list of packages
+  apt: name={{item}} state=installed
+  with_items:
+       - php-gd
+       - php-fpm
+       - php-mysql
+       - php-mcrypt
+       - python-mysqldb
+  notify:
+    - start php5-fpm
+    - restart nginx 
+    - restart mysql

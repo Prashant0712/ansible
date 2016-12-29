@@ -1,0 +1,16 @@
+--- 
+- hosts: "{{ target }}"
+  vars:
+    target: 127.0.0.1
+  tasks:
+
+    - name: Creating Image
+      ec2_ami:
+        instance_id: i-014eb6cc360dfa014
+        region: ap-southeast-1
+        wait: yes
+        name: ansible_ec2_ami_test
+        tags: 
+          Name: newtest
+          Service: TestService
+      register: instance

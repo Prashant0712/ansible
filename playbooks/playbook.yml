@@ -1,0 +1,6 @@
+--- 
+- hosts: "{{ target }}"
+  vars:
+    target: 127.0.0.1
+  roles:
+    - {role: wordpress, database: "wordpress", user: "test", pass: "pass"}

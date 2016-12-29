@@ -1,0 +1,7 @@
+- hosts: web
+  tasks:
+    #- name: testing the copy module
+    - lineinfile:
+        dest: /home/ubuntu/Gemfile
+        regexp: "^(.*)capistrano-rvm(.*)$"
+        line: "test"
